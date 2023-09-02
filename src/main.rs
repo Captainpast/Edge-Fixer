@@ -1,5 +1,4 @@
-use std::fs::File;
-use std::io::{Seek, SeekFrom, Write};
+use std::fs;
 use std::process::Command;
 use winreg::enums::*;
 use winreg::RegKey;
@@ -46,15 +45,6 @@ fn decode_url() {
     } else {
         open_browser(res_url.to_string());
     }
-
-    // let mut host_file = File::options()
-    //     .read(true)
-    //     .write(true)
-    //     .create(true)
-    //     .open("../../log.txt")
-    //     .unwrap();
-    // host_file.seek(SeekFrom::End(0)).unwrap();
-    // host_file.write(bing_regex_res.join(", ").as_bytes()).unwrap();
 }
 
 fn open_browser(url: String) {
@@ -69,14 +59,31 @@ fn install() {
 
     print!("edit host file...");
 
-    let mut host_file = File::options()
-        .read(true)
-        .write(true)
-        .open("C:/Windows/System32/drivers/etc/hosts")
-        .unwrap();
+    const ETC_HOSTS: &str = "C:/Windows/System32/drivers/etc/hosts";
+    const HOST_REDIRECT: &str = "0.0.0.0 www.bing.com # by edge fixer";
 
-    host_file.seek(SeekFrom::End(0)).unwrap();
-    host_file.write(b"\n0.0.0.0 www.bing.com # by edge fixer").unwrap();
+    let mut file_text = fs::read_to_string(ETC_HOSTS).unwrap();
+    file_text = file_text.replace("\r", "");
+
+    let splitted_text = file_text.split("\n");
+    let mut new_text = String::from("");
+
+    let mut added = false;
+    for line in splitted_text {
+        if line.contains("# by edge fixer") {
+            new_text = format!("{}{}", new_text, HOST_REDIRECT);
+            added = true;
+        } else {
+            new_text = format!("{}{}", new_text, line);
+        }
+        new_text = format!("{}\n", new_text);
+    }
+
+    if !added {
+        new_text = format!("{}{}", new_text, HOST_REDIRECT);
+    }
+
+    fs::write(ETC_HOSTS, new_text).unwrap();
 
     println!("success\n");
 
