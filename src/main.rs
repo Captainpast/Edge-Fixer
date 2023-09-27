@@ -5,17 +5,31 @@ use winreg::RegKey;
 use std::env;
 use urlencoding::decode;
 use regex::Regex;
+use log::{info, debug, LevelFilter};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
+
     let mut uninstall_arg = false;
     let mut is_debugger = false;
+    let mut log_file = "";
+
+    let mut log_file_path: String;
+
     for arg in args {
         if arg == "uninstall" {
             uninstall_arg = true;
         } else if arg == "--as-debugger" {
             is_debugger = true;
+        } else if arg == "--log-file" {
+            let current_exe = env::current_exe().unwrap();
+            log_file_path = format!("{}.log", current_exe.display());
+            log_file = log_file_path.as_str();
         }
+    }
+
+    if !String::is_empty(&log_file.to_string()) {
+        simple_logging::log_to_file(log_file, LevelFilter::Info).unwrap();
     }
 
     if uninstall_arg {
@@ -28,28 +42,35 @@ fn main() {
 }
 
 fn decode_url() {
+    debug!("decode_url()");
+
     let args: Vec<String> = env::args().collect();
     let args_string = args.join(" ") + "\n";
     let decoded_url = decode(&args_string).unwrap();
-    let url_regex = Regex::new(r"(https?://.+?)(\s|$)").unwrap();
+    info!("decoded_url: {}", decoded_url);
 
-    let mut res_url = "";
-    for (_, [path, _]) in url_regex.captures_iter(&decoded_url).map(|c| c.extract()) {
-        res_url = path;
-    }
+    let unwanted_regex = Regex::new(r"--out-pipe-name").unwrap();
+    let unwanted_params = unwanted_regex.is_match(&decoded_url);
 
-    let bing_regex = Regex::new(r"www\.bing\.com.*?\?.*?q=(.*?)(&|\s|$)").unwrap();
-    let mut bing_search = "";
-    //let mut bing_regex_res = vec![];
-    for (_, [path, _]) in bing_regex.captures_iter(&res_url).map(|c| c.extract()) {
-        //bing_regex_res.push(path);
-        bing_search = path;
-    }
+    if !unwanted_params {
+        let url_regex = Regex::new(r"(https?://.+?)(\s|$)").unwrap();
     
-    if bing_search != "" {
-        open_browser(format!("https://duckduckgo.com/?q={}", bing_search).to_string());
-    } else {
-        open_browser(res_url.to_string());
+        let mut res_url = "";
+        for (_, [path, _]) in url_regex.captures_iter(&decoded_url).map(|c| c.extract()) {
+            res_url = path;
+        }
+    
+        let bing_regex = Regex::new(r"www\.bing\.com.*?\?.*?q=(.*?)(&|\s|$)").unwrap();
+        let mut bing_search = "";
+        for (_, [path, _]) in bing_regex.captures_iter(&res_url).map(|c| c.extract()) {
+            bing_search = path;
+        }
+        
+        if bing_search != "" {
+            open_browser(format!("https://duckduckgo.com/?q={}", bing_search).to_string());
+        } else {
+            open_browser(res_url.to_string());
+        }
     }
 }
 
@@ -65,6 +86,8 @@ const ETC_HOSTS: &str = "C:/Windows/System32/drivers/etc/hosts";
 const HOST_REDIRECT: &str = "0.0.0.0 www.bing.com # by edge fixer";
 
 fn install() {
+    debug!("install()");
+
     println!("Hello, to Edge Fixer!\n");
 
     print!("edit host file...");
@@ -108,6 +131,8 @@ fn install() {
 }
 
 fn uninstall() {
+    debug!("uninstall()");
+
     println!("Removing Edge Fixer\n");
 
     print!("edit host file...");
