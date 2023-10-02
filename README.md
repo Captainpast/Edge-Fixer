@@ -7,7 +7,7 @@ _Currently, with Firefox and DuckDuckGo (in the future, it will be configurable)
 
 1. Download the newest EXE from the [release section](https://gitlab.com/Captainpast/edge-fixer/-/releases).
 2. Move it to a folder of your choice (do not move the EXE after execution).
-3. Run the EXE as an administrator (via right-click). There will be no response.
+3. Run the EXE via double-click. There will be no response.
 
 # Uninstall
 
