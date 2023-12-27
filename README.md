@@ -16,7 +16,18 @@ _Currently, with Firefox and DuckDuckGo (in the future, it will be configurable)
 3. Type `./edge-fixer.exe uninstall` and enter. There should be positive feedback.
 
 # Build
-WIP
+## On Debian (Ubuntu, Mint and others)
+### Install dependencies
 ```
-cargo build --release
+# WIP
+```
+
+### Build
+```
+cargo build --target=x86_64-pc-windows-gnu --release
+```
+
+### Signing
+```
+# WIP
 ```
