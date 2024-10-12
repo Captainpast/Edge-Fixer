@@ -17,17 +17,24 @@ _Currently, with Firefox and DuckDuckGo (in the future, it will be configurable)
 
 # Build
 ## On Debian (Ubuntu, Mint and others)
-### Install dependencies
-```
-# WIP
-```
 
 ### Build
-```
-cargo build --target=x86_64-pc-windows-gnu --release
+```bash
+# install new rust toolchain
+$ rustup target add x86_64-pc-windows-gnu
+# build the exe
+$ cargo build --target=x86_64-pc-windows-gnu --release
 ```
 
 ### Signing
-```
-# WIP
+```bash
+# install dependencies
+$ sudo apt install openssl osslsigncode
+# create signing certificate (if you dont own one)
+$ openssl req -x509 -newkey rsa:4096 -keyout cert/key.pem -out cert/cert.pem -sha256 -days 365
+# signing the exe
+$ osslsigncode sign -certs cert/cert.pem -key cert/key.pem \
+    -n "Edge Fixer" -i https://gitlab.com/Captainpast \
+    -t http://timestamp.digicert.com \
+    -in target/x86_64-pc-windows-gnu/release/edge-fixer.exe -out edge-fixer-signed.exe
 ```
