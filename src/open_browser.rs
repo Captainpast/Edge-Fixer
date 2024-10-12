@@ -3,15 +3,16 @@ use std::env;
 use urlencoding::decode;
 use regex::Regex;
 use std::process::Command;
-use log::{info, debug};
+
+use crate::log::LOGGER;
 
 pub fn decode_url() {
-    debug!("decode_url()");
+    unsafe { LOGGER.debug("decode_url()") };
 
     let args: Vec<String> = env::args().collect();
     let args_string = args.join(" ") + "\n";
     let decoded_url = decode(&args_string).unwrap();
-    info!("decoded_url: {}", decoded_url);
+    unsafe { LOGGER.info(format!("decoded_url: {}", decoded_url).as_str()) };
 
     let unwanted_regex = Regex::new(r"--out-pipe-name").unwrap();
     let unwanted_params = unwanted_regex.is_match(&decoded_url);

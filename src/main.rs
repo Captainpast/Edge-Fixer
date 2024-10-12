@@ -1,13 +1,15 @@
 mod admin;
 mod open_browser;
+mod log;
 
 use std::fs;
 use admin::reopen_as_admin;
+use log::LOGGER;
+use log::FileLogger;
 use open_browser::decode_url;
 use winreg::enums::*;
 use winreg::RegKey;
 use std::env;
-use log::{debug, LevelFilter};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -34,7 +36,7 @@ fn main() {
     }
 
     if !String::is_empty(&log_file.to_string()) {
-        simple_logging::log_to_file(log_file, LevelFilter::Info).unwrap();
+        FileLogger::create(log_file);
     }
 
     if is_debugger {
@@ -56,7 +58,7 @@ const ETC_HOSTS: &str = "C:/Windows/System32/drivers/etc/hosts";
 const HOST_REDIRECT: &str = "0.0.0.0 www.bing.com # by edge fixer";
 
 fn install() {
-    debug!("install()");
+    unsafe { LOGGER.debug("install()") };
 
     println!("Hello, to Edge Fixer!\n");
 
@@ -101,7 +103,7 @@ fn install() {
 }
 
 fn uninstall() {
-    debug!("uninstall()");
+    unsafe { LOGGER.debug("uninstall()") };
 
     println!("Removing Edge Fixer\n");
 
